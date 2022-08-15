@@ -1,5 +1,8 @@
 import numpy as np
 from matplotlib import image as im
+from matplotlib import pyplot as plt
+import cv2 as cv
+import random as r
 
 def isInvertible(arr):
     return (np.linalg.det(np.matmul(np.transpose(arr),arr)) != 0)
@@ -9,16 +12,41 @@ def isValidEig(arr, bound):
     vals,vecs = np.linalg.eig(np.matmul(np.transpose(arr),arr))
     eig1 = vals[0]
     eig2 = vals[1]
-    print(str(eig1))
-    print(str(eig2))
-
     if (eig1 > bound and eig2 > bound):
         if (eig1 > eig2):
-            return (abs(eig2/eig1) > 0.5)
+            return (abs(eig2/eig1) > 0.1)
         elif (eig1 < eig2):
-            return (abs(eig1/eig2) > 0.5)
+            return (abs(eig1/eig2) > 0.1)
     return False
-     
+
+def optimalFeatureSelection(image1, window_size=20):
+    dst = cv.cornerHarris(np.float32(cv.cvtColor(cv.imread(image1),cv.COLOR_BGR2GRAY)),2,3,0.01)
+    corners = []
+    i = window_size
+    j = window_size
+    while (i < dst.shape[0]- window_size):
+        while (j<dst.shape[1]-window_size):
+            if (dst[i][j] > 0.01*dst.max()):
+                corners.append((i,j))
+            j+=1
+        i+=1
+        j=0
+
+    
+
+    ret = []
+
+    track = 0
+    while (track < 20):
+        ret.append(r.choice(corners))
+        track+=1;
+
+    return ret;
+
+    
+
+
+
 
 
 def lucas_kanade(image1, image2, row, col, eig_lim, window_size=20):
@@ -26,17 +54,13 @@ def lucas_kanade(image1, image2, row, col, eig_lim, window_size=20):
     Returns optical flow gradient vector tuple (u,v) after accepting 2 image inputs, init row/col, minimum eigenvalue limit, and desired window size for implementation 
     of Lucas-Kanade Optical Flow algorithm  
     '''
-
-    #assuming we are dealing with 8 bit images but still want to normalize
-    im1 = im.imread(image1)/255 
-    im2 = im.imread(image2)/255
+    im1 = im.imread(image1) 
+    im2 = im.imread(image2)
 
     R, G, B = im1[:,:,0], im1[:,:,1], im1[:,:,2]
     im1 = 0.2989 * R + 0.5870 * G + 0.1140 * B
     r, g, b = im2[:,:,0], im2[:,:,1], im2[:,:,2]
     im2 = 0.2989 * r + 0.5870 * g + 0.1140 * b
-
-    print(im1.shape)
 
     assert(im1.size == im2.size)
 
@@ -64,8 +88,8 @@ def lucas_kanade(image1, image2, row, col, eig_lim, window_size=20):
 
     
 
-    assert(isInvertible(arr))
-    assert(isValidEig(arr, eig_lim)) #FILL IN A BOUND VAL
+    #assert(isInvertible(arr))
+    #assert(isValidEig(arr, eig_lim)) #FILL IN A BOUND VAL
 
     print("compiled successfully")
 
@@ -73,7 +97,11 @@ def lucas_kanade(image1, image2, row, col, eig_lim, window_size=20):
 
 
 def main():
-    print(str(lucas_kanade("I1.jpeg", "I2.jpeg", 75, 75, 0.1)))
+    for (r,c) in optimalFeatureSelection("I1.jpeg"):
+        (u,v) = lucas_kanade("I1.jpeg", "I2.jpeg",r, c, 0.1)
+        plt.imshow(im.imread("I1.jpeg"))
+        plt.quiver(r,c, u,v, color='r')
+    plt.show()
 
 if __name__ == "__main__":
     main()
