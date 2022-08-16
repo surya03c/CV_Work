@@ -40,12 +40,6 @@ def optimalFeatureSelection(image1, window_size=20):
 
     return ret;
 
-    
-
-
-
-
-
 def lucas_kanade(image1, image2, row, col, eig_lim, window_size=20):
     '''
     Returns optical flow gradient vector tuple (u,v) after accepting 2 image inputs, init row/col, minimum eigenvalue limit, and desired window size for implementation 
@@ -70,6 +64,7 @@ def lucas_kanade(image1, image2, row, col, eig_lim, window_size=20):
     j = 0 
 
     #fills in the necessary arrays
+    #8/15: will replace this with sobel gradient implementaiton from opencv package and see if there is any difference
     while (i < window_size):
         while (j < window_size):
             arr[r_track][c_track] = (0.25*(im1[row+i][col+j+1] + im2[row+i][col+j+1] + im1[row+i+1][col+j+1] + im2[row+i+1][col+j+1])) - (0.25*(im1[row+i][col+j] + im2[row+i][col+j] + im1[row+i+1][col+j] + im2[row+i+1][col+j]))
