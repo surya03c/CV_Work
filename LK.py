@@ -31,11 +31,8 @@ def optimalFeatureSelection(image1, window_size=20):
             j+=1
         i+=1
         j=0
-
     
-
     ret = []
-
     track = 0
     while (track < 20):
         ret.append(r.choice(corners))
